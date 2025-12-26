@@ -1,0 +1,189 @@
+entity-relationship-diagram
+
+// title
+title E-commerce Platform Data Model
+
+// tables
+users [icon: user, color: yellow]{
+  id string pk
+  first_name string
+  last_name string
+  email string
+  password_hash string
+  phone string
+  role enum('customer','admin')
+  created_at datetime
+}
+
+addresses [icon: map-pin, color: lightblue]{
+  id string pk
+  user_id string
+  full_name string
+  phone string
+  email string
+  address_line1 string
+  address_line2 string
+  city string
+  pincode string
+  is_default boolean
+}
+
+categories [icon: tag, color: orange]{
+  id string pk
+  name string
+  description text
+  created_at datetime
+}
+
+products [icon: package, color: green]{
+  id string pk
+  name string
+  description text
+  category_id string
+  is_active boolean
+  created_at datetime
+  updated_at datetime
+  stock_quantity string
+  stock_unit enum(Kg,gm,L,ml,other)
+}
+promotion_products [color:green] {
+ id (PK)
+ promotion_id 
+ product_id 
+}
+
+promotion_categories [color:green]{
+ id (PK)
+ promotion_id 
+ category_id 
+}
+product_images [icon: image, color: purple]{
+  id string pk
+  product_id string
+  image_path string
+  alt_text string
+  is_primary boolean
+}
+
+product_variants [icon: layers, color: teal]{
+  id string pk
+  product_id string
+  variant_name string
+  variant_price decimal
+  stock_quantity int
+  quantity_unit  string
+}
+
+carts [icon: shopping-cart, color: blue]{
+  id string pk
+  user_id string
+  coupon_active boolean
+  coupon_id               VARCHAR(36) FK NULL
+  coupon_code             VARCHAR(50) NULL
+  coupon_discount         DECIMAL(10,2) DEFAULT 0
+  dicounted_total_price decimal
+  actual_amount decimal
+  updated_at datetime
+}
+
+cart_items [icon: shopping-bag, color: lightgreen]{
+  id string pk
+  cart_id string
+  product_variant_id string
+  quantity int
+  product_actual_price Decimal
+  applicable_promotion_id VARCHAR(36) FK NULL
+  promotion_discount    DECIMAL(10,2) DEFAULT 0
+  After_discounted_total decimal
+}
+
+coupons [icon: consumer, color:blue]{
+  id string pk
+  code string
+  discount_type string
+  discount_values string
+  min_order_value DECIMAL(10,2)
+  usage_limit INT
+  used_count INT 
+  start_date DATETIME
+  end_date DATETIME
+  is_active boolean
+  
+}
+
+coupon_code_users[color:violet]{
+  id string pk
+  coupon_id string
+  user_id string
+
+}
+
+orders [icon: credit-card, color: red]{
+  id string pk
+  user_id string
+  address_id string
+  actual_amount decimal
+  payment_status enum('pending','paid','failed')
+  order_status enum('pending','confirmed','out_for_Delivery','delivered','cancelled')
+  stripe_payment_id string
+  created_at datetime
+  discount_source enum('PROMOTION', 'COUPON_CODE',NULL)
+  discount_amount DECIMAL
+  sub_total Decimal
+}
+
+order_items [icon: list, color: pink]{
+  id string pk
+  order_id string
+  product_id string
+  product_variant_id string
+  quantity int
+  price decimal
+}
+
+promotions [icon: percent, color: violet]{
+  id string pk
+  title string
+  promotion_type string
+  discount_type string
+  description text
+  discount_value int
+  min_order_value int
+  active boolean
+  created_at datetime
+  start_date datetime
+  end_date datetime
+}
+
+notifications [icon: bell, color: gray]{
+  id string pk
+  user_id string
+  type enum('email','whatsapp')
+  content text
+  status enum('sent','failed')
+  created_at datetime
+}
+
+// relationships
+users.id < addresses.user_id
+users.id < orders.user_id
+users.id - carts.user_id
+carts.id < cart_items.cart_id
+product_variants.id < cart_items.product_variant_id
+products.id < product_variants.product_id
+products.id < product_images.product_id
+categories.id < products.category_id
+orders.id < order_items.order_id
+product_variants.id < order_items.product_variant_id
+products.id < order_items.product_id
+addresses.id < orders.address_id
+users.id < notifications.user_id
+promotions.product_id < products.id
+promotions.id  < cart_items.applicable_promotion_id
+promotion_categories.category_id  < categories.id
+promotion_categories.promotion_id < promotions.id
+promotion_products.product_id < products.id
+promotion_products.promotion_id < promotions.id
+coupon_code_users.coupon_id < coupons.id
+coupon_code_users.user_id < users.id
+
